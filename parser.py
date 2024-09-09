@@ -36,24 +36,23 @@ def lexer(texto):
     return tokens
 
 def syntax_condicion(condicion):
-    #me toca verificar longitud de condicion dependiendo el caso, es lo que esta entre ()
-    sintaxis = False
+    sintaxis = True
     tokens = condicion
     inicio = tokens[0].upper()
     if inicio in condiciones:
         if inicio != "not".upper() and tokens[1] == "?" and tokens[2] == "(" and tokens[4] == ")":
             if inicio == "isBlocked".upper():
-                if tokens[3] in direccion_condiciones:
+                if tokens[3] in direccion_condiciones and len(tokens) == 5:
                     sintaxis = True
                 else:
                     return False
             if inicio == "isFacing".upper():
-                if tokens[3] in orientacion_turn:
+                if tokens[3] in orientacion_turn and len(tokens) == 5:
                     sintaxis = True
                 else:
                     return False
             if inicio == "zero".upper():
-                if tokens[3] in valores or tokens[3].isdigit():
+                if (tokens[3] in valores or tokens[3].isdigit()) and len(tokens) == 5:
                     sintaxis = True
                 else:
                     return False
@@ -65,23 +64,25 @@ def syntax_condicion(condicion):
                     if tokens[i] == ")" and fin_condicion == None:
                         fin_condicion = i
                     i += 1
-                if fin_condicion != None:
+                if fin_condicion != None and len(tokens) == 3 + (fin_condicion - 2):
                     nueva_condicion = tokens[2:fin_condicion]
                     sintaxis = syntax_condicion(nueva_condicion)
                 else:
-                    return False
+                    print("error con not")
+                    sintaxis = False
             else:
-                return False                  
+                print("error con not: condicion no empieza por parentesis")
+                sintaxis = False                  
     else:
-        return False
+        print("la condicion señalada no existe")
+        sintaxis = False
     
     return sintaxis
                 
     
 
-def syntax_control(control):
-    sintaxis = False
-    tokens = control
+def syntax_control(tokens):
+    sintaxis = True
     inicio = tokens[0].upper()
     
     if inicio == "if".upper():
@@ -114,29 +115,9 @@ def syntax_control(control):
                                         i += 1
                                     if fin_bloque2 != None:
                                         bloque2 = tokens[fin_bloque1+2:fin_bloque2+1]
-                                        if syntax_bloque(bloque2):
-                                            if tokens[fin_bloque2+1].upper() == "fi".upper():
-                                                if len(tokens) == fin_bloque2+2:
-                                                    sintaxis = True
-                                                else:
-                                                    return False
-                                            else:
-                                                return False
-                                        else:
-                                            return False
-                                    else:
-                                        return False   
-                                else:
-                                    return False  
-                            else:
-                                return False
-                        else:
-                            return False
-                else:
-                    return False
-            else:
-                return False               
-    
+                                        if not syntax_bloque(bloque2) or tokens[fin_bloque2+1].upper() != "fi".upper() or len(tokens) != fin_bloque2+2:
+                                            print("error con el if en algun lado")
+                                            sintaxis = False
     elif inicio == "do".upper():
         if tokens[1] == "(":
             i = 2
@@ -156,21 +137,9 @@ def syntax_control(control):
                         i += 1
                     if fin_bloque1 != None:
                         bloque1 = tokens[fin_condicion+2:fin_bloque1+1]
-                        if syntax_bloque(bloque1):
-                            if tokens[fin_bloque1+1].upper() == "od".upper():
-                                if len(tokens) == fin_bloque1+2:
-                                    sintaxis = True
-                                else:
-                                    return False
-                        else:
-                            return False
-                    else:
-                        return False
-            else:
-                return False
-        else:
-            return False
-    
+                        if not syntax_bloque(bloque1) or tokens[fin_bloque1+1].upper() != "od".upper() or len(tokens) != fin_bloque1+2:
+                            print("error en algun lado con el do")
+                            sintaxis = False
     elif inicio == "rep".upper():
         if tokens[1].isdigit():
             fin_bloque1 = None
@@ -181,21 +150,9 @@ def syntax_control(control):
                 i += 1
             if fin_bloque1 != None:
                 bloque1 = tokens[2:fin_bloque1+1]
-                if syntax_bloque(bloque1):
-                    if tokens[fin_bloque1+1].upper() == "per".upper():
-                        if len(tokens) == fin_bloque1+2:
-                            sintaxis = True
-                        else:
-                            return False
-                    else:
-                        return False
-                else:
-                    return False
-        else:
-            return False
-    else:
-        return False
-    
+                if not syntax_bloque(bloque1) or tokens[fin_bloque1+1].upper() == "per".upper() or len(tokens) != fin_bloque1+2:
+                    print("algun error con el repeat en algun lado")
+                    sintaxis = False
     return sintaxis          
 
 def syntax_comando(tokens):
@@ -267,11 +224,13 @@ def syntax_comando(tokens):
             nuevo_comando = tokens[2:6]
             sintaxis = syntax_comando(nuevo_comando)
         else:
+            print("el safeexe esta mal")
             sintaxis = False
     else:
         if tokens[0] in variables and len(tokens) == 3 and tokens[1] == "=" and (tokens[2] in valores or tokens[2].isdigit()):
             sintaxis = True
         else:
+            print("el comando de asignacion de valor a variable esta mal")
             sintaxis = False
     return sintaxis
         
