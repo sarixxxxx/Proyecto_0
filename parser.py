@@ -281,16 +281,13 @@ def syntax_bloque(bloque):
             if instruccion_actual:
                 instrucciones.append(instruccion_actual + [token])
                 instruccion_actual = []
-            continue
-        
-        instruccion_actual.append(token)
+        else:
+            instruccion_actual.append(token)
 
-    # Captura cualquier instrucción restante después del último `;`
     if instruccion_actual:
         instrucciones.append(instruccion_actual)
 
     for instruccion in instrucciones:
-        print(instruccion)
         if not syntax_instruccion(instruccion):
             sintaxis = False
     
