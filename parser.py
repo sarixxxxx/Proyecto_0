@@ -64,12 +64,11 @@ def syntax_condicion(condicion):
                     if tokens[i] == ")" and fin_condicion == None:
                         fin_condicion = i
                     i += 1
-                if fin_condicion != None and len(tokens) == 3 + (fin_condicion - 2):
-                    nueva_condicion = tokens[2:fin_condicion]
+                if fin_condicion != None:
+                    nueva_condicion = tokens[2:fin_condicion+1]
                     sintaxis = syntax_condicion(nueva_condicion)
                 else:
-                    print("error con not")
-                    sintaxis = False
+                    return False
             else:
                 print("error con not: condicion no empieza por parentesis")
                 sintaxis = False                  
@@ -143,15 +142,15 @@ def syntax_control(tokens):
                             print("error en algun lado con el do")
                             sintaxis = False
     elif inicio == "rep".upper():
-        if tokens[1].isdigit():
+        if tokens[1].isdigit() and tokens[2].upper() == "times".upper():
             fin_bloque1 = None
-            i = 2
+            i = 3
             while i < len(tokens) and fin_bloque1 == None:
                 if tokens[i] == "}":
                     fin_bloque1 = i
                 i += 1
             if fin_bloque1 != None:
-                bloque1 = tokens[2:fin_bloque1+1]
+                bloque1 = tokens[3:fin_bloque1+1]
                 if not syntax_bloque(bloque1) or tokens[fin_bloque1+1].upper() == "per".upper() or len(tokens) != fin_bloque1+2:
                     print("algun error con el repeat en algun lado")
                     sintaxis = False
@@ -413,7 +412,7 @@ texto5 = '''
 NEW VAR one= 1
 NEW MACRO  		goend ()
 {
-	if not (blocked?(front))
+	if (not (isblocked?(front)
 	then  { move(one); goend();  }
 	else  { nop; }
     fi;
@@ -423,15 +422,8 @@ NEW MACRO  		goend ()
 texto6 = '''
 NEW MACRO fill ()
   { 
-  rep roomForChips times 
+  rep one times 
   {  if not (zero?(myChips)) { drop(1);}  else { nop; } fi ;} ; 
-  }
-  
-  NEW MACRO fill1 ()
-  { 
-  while not zero?(rooomForChips)
-  {  if not (zero?(myChips)) { drop(1);}  else { nop; } fi ;
-  } ; 
   }
 '''
 
