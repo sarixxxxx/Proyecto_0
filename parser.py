@@ -83,7 +83,6 @@ def syntax_condicion(condicion):
 def syntax_control(tokens):
     sintaxis = True
     inicio = tokens[0].upper()
-    
     if inicio == "if".upper():
         if tokens[1] == "(":
             i = 2
@@ -95,7 +94,8 @@ def syntax_control(tokens):
             if fin_condicion != None:
                 condicion = tokens[2:fin_condicion]
                 if syntax_condicion(condicion):
-                    if tokens[fin_condicion+1].upper() == "then".upper():
+                    print("ENNTROOOOO")
+                    if tokens[fin_condicion+1].upper() == "then".upper() and tokens[fin_condicion+2] == "{":
                         fin_bloque1 = None
                         i = fin_condicion+2
                         while i < len(tokens) and fin_bloque1 == None:
@@ -129,7 +129,7 @@ def syntax_control(tokens):
                 i += 1
             if fin_condicion != None:
                 condicion = tokens[2:fin_condicion]
-                if syntax_condicion(condicion):
+                if syntax_condicion(condicion) and tokens[fin_condicion+1] == "{":
                     fin_bloque1 = None
                     i = fin_condicion+1
                     while i < len(tokens) and fin_bloque1 == None:
@@ -142,7 +142,7 @@ def syntax_control(tokens):
                             print("error en algun lado con el do")
                             sintaxis = False
     elif inicio == "rep".upper():
-        if tokens[1].isdigit() and tokens[2].upper() == "times".upper():
+        if (tokens[1].isdigit() or tokens[1].upper() in valores) and tokens[2].upper() == "times".upper() and tokens[3] == "{":
             fin_bloque1 = None
             i = 3
             while i < len(tokens) and fin_bloque1 == None:
@@ -151,9 +151,13 @@ def syntax_control(tokens):
                 i += 1
             if fin_bloque1 != None:
                 bloque1 = tokens[3:fin_bloque1+1]
-                if not syntax_bloque(bloque1) or tokens[fin_bloque1+1].upper() == "per".upper() or len(tokens) != fin_bloque1+2:
+                if syntax_bloque(bloque1) and tokens[fin_bloque1+1].upper() == "per".upper() and len(tokens) == fin_bloque1+2:
+                    sintaxis = True
+                else:
                     print("algun error con el repeat en algun lado")
                     sintaxis = False
+        else:
+            sintaxis = False
     return sintaxis          
 
 def syntax_comando(tokens):
@@ -276,8 +280,10 @@ def syntax_bloque(bloque):
     for token in tokens:
         if token == '{':
             nivel_bloque += 1
+            instruccion_actual.append(token)
         elif token == '}':
             nivel_bloque -= 1
+            instruccion_actual.append(token)
         elif token == ';' and nivel_bloque == 0:
             if instruccion_actual:
                 instrucciones.append(instruccion_actual + [token])
@@ -382,11 +388,6 @@ walk(10);
 }
 NEW MACRO moveSquare (steps){walk(steps); turnToMy(right); walk(steps); turnToMy(right); walk(steps); turnToMy(right); walk(steps); }
 EXEC {walk(10); turnToThe(north); jump(3); }
-
-
-'''
-
-texto3 = '''
 EXEC {
     if(isBlocked?(front)) then {
         turnToMy(right);
@@ -395,6 +396,11 @@ EXEC {
         walk(10);
     } fi;
 }
+
+'''
+
+texto3 = '''
+
 EXEC {rep 3 times {walk(2); turnToMy(left); } per;}
 EXEC {safeExe(drop(10));}
 NEW MACRO collectChips (chipsAmount){pick(chipsAmount); }
