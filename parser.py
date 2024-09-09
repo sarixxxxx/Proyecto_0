@@ -394,7 +394,8 @@ EXEC {
         walk(10);
     } fi;
 }
-EXEC {rep 3 times {walk(2); turnToMy(left); } per}
+EXEC {rep 3 times {walk(2); turnToMy(left); } per;}
+EXEC {safeExe(drop(10));}
 
 '''
 
