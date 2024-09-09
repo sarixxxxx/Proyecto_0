@@ -22,6 +22,13 @@ def inicio(control):
                 print(f"Tokens generados: {control["tokens"]}")
                 
                 valido= ps.parser(control["tokens"])
+                if valido:
+                    print("El código ingresado es válido lexicográficamente.")
+                else:
+                    print("El código ingresado no es válido lexicográficamente.")
+                print("Si desea salir, ingrese SALIR. \n")
+                print("De lo contrario, ingrese un nuevo código para analizar. \n")
+                
         except Exception as e:
             print(f"Error: {e}")
         
