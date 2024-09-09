@@ -14,8 +14,6 @@ controles = ["if".upper(), "do".upper(), "rep".upper()]
 condiciones = ["isBlocked".upper(), "isFacing".upper(), "zero".upper(), "not".upper()]
 direccion_condiciones = ["left".upper(), "right".upper(), "front".upper(), "back".upper()]
 
-variables = []
-dicc_macros = {}
 
 
 def lexer(texto):
@@ -81,7 +79,7 @@ def syntax_condicion(condicion):
                 
     
 
-def syntax_control(tokens):
+def syntax_control(tokens, variables, dicc_macros):
     sintaxis = True
     inicio = tokens[0].upper()
     
@@ -105,7 +103,7 @@ def syntax_control(tokens):
                             i += 1
                         if fin_bloque1 != None:
                             bloque1 = tokens[fin_condicion+2:fin_bloque1+1]
-                            if syntax_bloque(bloque1):
+                            if syntax_bloque(bloque1, variables, dicc_macros):
                                 if tokens[fin_bloque1+1].upper() == "else".upper():
                                     fin_bloque2 = None
                                     i = fin_bloque1 + 2
@@ -115,7 +113,7 @@ def syntax_control(tokens):
                                         i += 1
                                     if fin_bloque2 != None:
                                         bloque2 = tokens[fin_bloque1+2:fin_bloque2+1]
-                                        if not syntax_bloque(bloque2) or tokens[fin_bloque2+1].upper() != "fi".upper() or len(tokens) != fin_bloque2+2:
+                                        if not syntax_bloque(bloque2, variables, dicc_macros) or tokens[fin_bloque2+1].upper() != "fi".upper() or len(tokens) != fin_bloque2+2:
                                             print("error con el if en algun lado")
                                             sintaxis = False
         else:
@@ -139,7 +137,7 @@ def syntax_control(tokens):
                         i += 1
                     if fin_bloque1 != None:
                         bloque1 = tokens[fin_condicion+2:fin_bloque1+1]
-                        if not syntax_bloque(bloque1) or tokens[fin_bloque1+1].upper() != "od".upper() or len(tokens) != fin_bloque1+2:
+                        if not syntax_bloque(bloque1,variables, dicc_macros) or tokens[fin_bloque1+1].upper() != "od".upper() or len(tokens) != fin_bloque1+2:
                             print("error en algun lado con el do")
                             sintaxis = False
     elif inicio == "rep".upper():
@@ -152,12 +150,12 @@ def syntax_control(tokens):
                 i += 1
             if fin_bloque1 != None:
                 bloque1 = tokens[2:fin_bloque1+1]
-                if not syntax_bloque(bloque1) or tokens[fin_bloque1+1].upper() == "per".upper() or len(tokens) != fin_bloque1+2:
+                if not syntax_bloque(bloque1, variables, dicc_macros) or tokens[fin_bloque1+1].upper() == "per".upper() or len(tokens) != fin_bloque1+2:
                     print("algun error con el repeat en algun lado")
                     sintaxis = False
     return sintaxis          
 
-def syntax_comando(tokens):
+def syntax_comando(tokens, variables, dicc_macros):
     sintaxis = True
     inicio = tokens[0].upper()
     if inicio in dicc_macros:
@@ -224,7 +222,7 @@ def syntax_comando(tokens):
     elif inicio == "SafeExe".upper():
         if len(tokens) == 7:
             nuevo_comando = tokens[2:6]
-            sintaxis = syntax_comando(nuevo_comando)
+            sintaxis = syntax_comando(nuevo_comando,variables, dicc_macros)
         else:
             print("el safeexe esta mal")
             sintaxis = False
@@ -237,7 +235,7 @@ def syntax_comando(tokens):
             sintaxis = False
     return sintaxis
         
-def syntax_instruccion(instruccion):
+def syntax_instruccion(instruccion, variables, dicc_macros):
     sintaxis = True
     if instruccion[-1] != ";":
         print("La instruccion no termina con ;")
@@ -247,11 +245,11 @@ def syntax_instruccion(instruccion):
     inicio = tokens[0].upper()
     
     if inicio in comandos:
-        sintaxis = syntax_comando(tokens)
+        sintaxis = syntax_comando(tokens,variables, dicc_macros)
         if not sintaxis:
             print("Error en syntax comando")
     elif inicio in controles:
-        sintaxis = syntax_control(tokens)
+        sintaxis = syntax_control(tokens, variables, dicc_macros)
         if not sintaxis:
             print("Error en syntax control")
     else:
@@ -259,7 +257,7 @@ def syntax_instruccion(instruccion):
         sintaxis = False
     return sintaxis
 
-def syntax_bloque(bloque):
+def syntax_bloque(bloque, variables, dicc_macros):
     sintaxis = True
     if bloque[0] != "{":
         print("Syntax Error: inicia instruccion sin llave")
@@ -290,14 +288,14 @@ def syntax_bloque(bloque):
         instrucciones.append(instruccion_actual)
 
     for instruccion in instrucciones:
-        if not syntax_instruccion(instruccion):
+        if not syntax_instruccion(instruccion,variables, dicc_macros):
             sintaxis = False
     
     return sintaxis
     
 
 #ojo me toca revisar los casos en que esta vacio pa no delvolver false, digamos exect{}
-def syntax_definicion(tokens):
+def syntax_definicion(tokens,variables, dicc_macros):
     sintaxis = True
     definicion = tokens[0].upper()
     
@@ -330,14 +328,13 @@ def syntax_definicion(tokens):
                     valores.append(parametro.upper())
                 dicc_macros[tokens[1].upper()] = len(parametros_lista)
                 bloque = tokens[indice_final+1:]
-                sintaxis = syntax_bloque(bloque)
+                sintaxis = syntax_bloque(bloque,variables, dicc_macros)
         else:
             print("ERROR EN DEFINICION MACRO")
             sintaxis = False
     return sintaxis
 
-def parser(texto):
-    tokens = lexer(texto)
+def parser(tokens, variables, dicc_macros):
     sintaxis = True
     
     if tokens[0] not in inputs:
@@ -358,15 +355,14 @@ def parser(texto):
         inp = subconjunto[0].upper()
         if inp == "EXEC".upper():
             bloque = subconjunto[1:] #dentro revisa que empiece bien
-            if not syntax_bloque(bloque):
+            if not syntax_bloque(bloque,variables, dicc_macros):
                 print("Syntax Error: Invalid execution block")
                 sintaxis = False
         else:
             definicion = subconjunto[1:]
-            if not syntax_definicion(definicion):
+            if not syntax_definicion(definicion, variables, dicc_macros):
                 print("Syntax Error: Invalid definition block")
                 sintaxis = False
-    print(sintaxis)
     return sintaxis
 
 #pruebas
@@ -440,7 +436,7 @@ NEW MACRO grabAll ()
 { grab (balloonsHere);
 }
 '''
-
+"""
 parser(texto)
 print("\n")
 parser(texto2)
@@ -454,3 +450,4 @@ print("\n")
 parser(texto6)
 print("\n")
 parser(texto7)
+"""
