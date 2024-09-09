@@ -19,7 +19,9 @@ def inicio(control):
                 seguir=False
             else:
                 control["tokens"]= ps.lexer(entrada)
+                print(f"Tokens generados: {control["tokens"]}")
                 
+                valido= ps.parser(control["tokens"])
         except Exception as e:
             print(f"Error: {e}")
         
