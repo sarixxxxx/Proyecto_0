@@ -118,6 +118,8 @@ def syntax_control(tokens):
                                         if not syntax_bloque(bloque2) or tokens[fin_bloque2+1].upper() != "fi".upper() or len(tokens) != fin_bloque2+2:
                                             print("error con el if en algun lado")
                                             sintaxis = False
+        else:
+            sintaxis = False
     elif inicio == "do".upper():
         if tokens[1] == "(":
             i = 2
@@ -177,7 +179,6 @@ def syntax_comando(tokens):
         if len(tokens) == 4 and tokens[1] == "(" and tokens[2].upper() in direccion_turn and tokens[3] == ")":
             sintaxis = True
         else:
-            print(tokens)
             print("fallo turn to my")
             sintaxis = False
     elif inicio == "turnToThe".upper():
@@ -228,9 +229,10 @@ def syntax_comando(tokens):
             print("el safeexe esta mal")
             sintaxis = False
     else:
-        if tokens[0] in variables and len(tokens) == 3 and tokens[1] == "=" and (tokens[2] in valores or tokens[2].isdigit()):
+        if tokens[0].upper() in variables and len(tokens) == 3 and tokens[1] == "=" and (tokens[2].upper() in valores or tokens[2].isdigit()):
             sintaxis = True
         else:
+            print(tokens)
             print("el comando de asignacion de valor a variable esta mal")
             sintaxis = False
     return sintaxis
@@ -326,7 +328,7 @@ def syntax_definicion(tokens):
                 parametros_lista = parametros.split(",")
                 for parametro in parametros_lista:
                     valores.append(parametro.upper())
-                dicc_macros[tokens[1]] = len(parametros)
+                dicc_macros[tokens[1].upper()] = len(parametros_lista)
                 bloque = tokens[indice_final+1:]
                 sintaxis = syntax_bloque(bloque)
         else:
@@ -396,6 +398,10 @@ EXEC {
 }
 EXEC {rep 3 times {walk(2); turnToMy(left); } per;}
 EXEC {safeExe(drop(10));}
+NEW MACRO collectChips (chipsAmount){pick(chipsAmount); }
+EXEC {collectChips(5);}
+NEW MACRO foo (chipsAmount, c){pick(chipsAmount); }
+
 
 '''
 
