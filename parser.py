@@ -238,8 +238,8 @@ def syntax_comando(tokens):
 def syntax_instruccion(instruccion):
     sintaxis = True
     if instruccion[-1] != ";":
-        sintaxis = False
         print("La instruccion no termina con ;")
+        return False
     
     tokens = instruccion[0:-1]
     inicio = tokens[0].upper()
@@ -394,6 +394,8 @@ EXEC {
         walk(10);
     } fi;
 }
+EXEC {rep 3 times {walk(2); turnToMy(left); } per}
+
 '''
 
 texto4 = '''
